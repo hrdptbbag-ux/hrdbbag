@@ -25,13 +25,16 @@ export const ADMIN_CREDENTIALS = {
 };
 
 // --- Pengaturan Database (Supabase) ---
-// Ganti placeholder di bawah ini dengan URL dan Kunci Anon dari proyek Supabase Anda.
+// Kredensial Supabase diambil dari environment variables untuk keamanan.
+// Saat mendeploy ke layanan seperti Netlify, pastikan untuk mengatur
+// SUPABASE_URL dan SUPABASE_ANON_KEY di pengaturan environment situs Anda.
 export const SUPABASE_CONFIG = {
-  URL: 'https://vaztjidmoiqcaccyxvjq.supabase.co', // <-- GANTI DENGAN URL PROYEK SUPABASE ANDA
-  ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhenRqaWRtb2lxY2FjY3l4dmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY3Mjk2MzQsImV4cCI6MjA3MjMwNTYzNH0.HlNywxDdG85i8JFtxjKmPIzlX9iyINHti6zwpwb__c8', // <-- GANTI DENGAN KUNCI ANON SUPABASE ANDA
+  URL: process.env.SUPABASE_URL as string,
+  ANON_KEY: process.env.SUPABASE_ANON_KEY as string,
 };
 
 // --- Pengaturan Model AI (Gemini) ---
+// API Key Gemini juga diambil dari environment variable API_KEY.
 export const GEMINI_CONFIG = {
   MODEL: 'gemini-2.5-flash',
 };
