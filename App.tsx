@@ -17,6 +17,21 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
 
   useEffect(() => {
     if (notification) {
@@ -112,6 +127,19 @@ function App() {
     const { data, error } = await supabase
       .from('operational_data')
       .insert([newData])
+      .select();
+    
+    if (error) throw error;
+    if (data) {
+        setOperationalData(prev => [...prev, ...data].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    }
+  };
+
+  const handleAddBulkData = async (newDataList: Omit<OperationalData, 'id'>[]) => {
+    if (!supabase) throw new Error("Koneksi Supabase tidak tersedia.");
+    const { data, error } = await supabase
+      .from('operational_data')
+      .insert(newDataList)
       .select();
     
     if (error) throw error;
@@ -265,6 +293,7 @@ function App() {
                                 onUpdateData={handleUpdateData}
                                 onDeleteData={handleDeleteData}
                                 onDeleteAll={handleDeleteAll}
+                                onAddBulkData={handleAddBulkData}
                                 karyawanData={karyawanData}
                                 onAddKaryawan={handleAddKaryawan}
                                 onUpdateKaryawan={handleUpdateKaryawan}
@@ -303,6 +332,8 @@ function App() {
         onNavigate={handleNavigate}
         onLogout={handleLogout}
         view={view}
+        isOnline={isOnline}
+        dbError={!!error}
       />
       <main className="p-4 sm:p-6 lg:p-8">
         {renderContent()}

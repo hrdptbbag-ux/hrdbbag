@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { OperationalData, Karyawan, AdminView } from '../types';
 import OperationalDataTable from './MaterialDistributionChart';
 import KaryawanDataTable from './KaryawanDataTable';
-import AnalysisPanel from './AnalysisPanel';
 import * as XLSX from 'xlsx';
 import { DATA_CONFIG, ADMIN_CREDENTIALS } from '../config';
 
@@ -13,6 +12,7 @@ interface AdminPageProps {
   onUpdateData: (updatedData: OperationalData) => Promise<void>;
   onDeleteData: (date: string) => Promise<boolean>;
   onDeleteAll: () => Promise<boolean>;
+  onAddBulkData: (newDataList: Omit<OperationalData, 'id'>[]) => Promise<void>;
   onAddKaryawan: (newKaryawan: Omit<Karyawan, 'id' | 'created_at'>) => Promise<void>;
   onUpdateKaryawan: (updatedKaryawan: Karyawan) => Promise<void>;
   onDeleteKaryawan: (id: number) => Promise<boolean>;
@@ -167,7 +167,7 @@ const WarningIcon = () => (
 const AdminPage: React.FC<AdminPageProps> = (props) => {
   const { 
     operationalData, karyawanData, onAddData, onUpdateData, onDeleteData, 
-    onDeleteAll, onAddKaryawan, onUpdateKaryawan, onDeleteKaryawan, onDeleteAllKaryawan, 
+    onDeleteAll, onAddBulkData, onAddKaryawan, onUpdateKaryawan, onDeleteKaryawan, onDeleteAllKaryawan, 
     onAddBulkKaryawan, onSetLogo, logoUrl, setNotification
   } = props;
   
@@ -275,6 +275,86 @@ const AdminPage: React.FC<AdminPageProps> = (props) => {
         return itemDate >= start && itemDate <= end;
     });
   }, [operationalData, opFilters]);
+
+  const handleDownloadOpTemplate = () => {
+    const headers = ['date', 'pro', 'stb', 'bd', 'ritase', 'volume', 'targetM3'];
+    const exampleData = [
+      { date: '2025-07-20', pro: 18, stb: 2, bd: 4, ritase: 100, volume: 1100, targetM3: 1050 },
+      { date: '2025-07-21', pro: 20, stb: 1, bd: 3, ritase: 110, volume: 1250, targetM3: 1050 },
+      { date: '2025-07-22', pro: 15, stb: 5, bd: 4, ritase: 90, volume: 950, targetM3: 1050 }
+    ];
+    const wsData = [headers, ...exampleData.map(row => headers.map(header => row[header as keyof typeof row]))];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template Operasional");
+    XLSX.writeFile(wb, "template_operasional_bbag.xlsx");
+  };
+
+  const handleOpFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        try {
+            setIsSubmitting(true);
+            const data = event.target?.result;
+            const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const json: any[] = XLSX.utils.sheet_to_json(worksheet);
+
+            if (json.length === 0) throw new Error("File Excel kosong.");
+            
+            const requiredHeaders = ['date', 'pro', 'stb', 'bd', 'ritase', 'volume', 'targetM3'];
+            const fileHeaders = Object.keys(json[0]);
+            for (const header of requiredHeaders) {
+                if (!fileHeaders.includes(header)) {
+                    throw new Error(`Kolom wajib "${header}" tidak ditemukan.`);
+                }
+            }
+
+            const newDataList = json.map((row, index) => {
+                if (!row.date) throw new Error(`Baris ${index + 2}: Kolom 'date' wajib diisi.`);
+                
+                const pro = Number(row.pro) || 0;
+                const stb = Number(row.stb) || 0;
+                const bd = Number(row.bd) || 0;
+                const ritase = Number(row.ritase) || 0;
+                const volume = Number(row.volume) || 0;
+                const targetM3 = Number(row.targetM3) || DATA_CONFIG.DEFAULT_TARGET_M3;
+                
+                // Handle Excel date format
+                const date = row.date instanceof Date 
+                    ? new Date(row.date.getTime() - (row.date.getTimezoneOffset() * 60000)).toISOString().split('T')[0] 
+                    : String(row.date);
+
+                const wt = pro + stb + bd;
+                const pa = wt > 0 ? ((pro + stb) / wt) * 100 : 0;
+                const ua = (pro + stb) > 0 ? (pro / (pro + stb)) * 100 : 0;
+                const eu = wt > 0 ? (pro / wt) * 100 : 0;
+                const averageM3 = ritase > 0 ? volume / ritase : 0;
+                const pencapaian = targetM3 > 0 ? (volume / targetM3) * 100 : 0;
+
+                return {
+                    date, pro, stb, bd, ritase, volume, targetM3,
+                    wt, pa, ua, ma: pa, eu, averageM3, pencapaian
+                };
+            });
+            
+            await onAddBulkData(newDataList);
+            setNotification({ message: `${newDataList.length} data operasional berhasil diunggah.`, type: 'success' });
+
+        } catch (error: any) {
+            console.error("Gagal mengunggah data operasional:", error);
+            setNotification({ message: `Gagal mengunggah file: ${error.message}`, type: 'error' });
+        } finally {
+            setIsSubmitting(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+    reader.readAsBinaryString(file);
+  };
 
 
   // --- KARYAWAN LOGIC ---
@@ -518,7 +598,7 @@ const AdminPage: React.FC<AdminPageProps> = (props) => {
   
   // --- COMMON UI LOGIC ---
   const renderTabs = () => (
-    <div className="mb-6 border-b border-slate-700">
+    <div className="mb-6 border-b border-slate-700 no-print">
         <nav className="-mb-px flex space-x-6" aria-label="Tabs">
             <button onClick={() => setCurrentView('OPERATIONAL')} className={`${currentView === 'OPERATIONAL' ? 'border-cyan-400 text-cyan-300' : 'border-transparent text-slate-400 hover:text-white hover:border-slate-500'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg transition-colors`}>
                 Data Operasional
@@ -553,13 +633,13 @@ const AdminPage: React.FC<AdminPageProps> = (props) => {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold text-cyan-300">Admin - Manajemen Data</h1>
+      <h1 className="text-3xl font-bold text-cyan-300 no-print">Admin - Manajemen Data</h1>
       {renderTabs()}
 
       {/* --- OPERATIONAL VIEW --- */}
       {currentView === 'OPERATIONAL' && (
         <div className="space-y-8">
-          <section className="bg-slate-800/60 p-6 rounded-xl shadow-lg border border-slate-700">
+          <section className="bg-slate-800/60 p-6 rounded-xl shadow-lg border border-slate-700 no-print">
             <h2 className="text-xl font-semibold mb-4 text-white">
               {editingDate ? `Edit Data Tanggal ${new Date(editingDate).toLocaleDateString('id-ID')}` : 'Input Data Operasional Baru'}
             </h2>
@@ -584,22 +664,47 @@ const AdminPage: React.FC<AdminPageProps> = (props) => {
                 </div>
             </form>
           </section>
+
+          <section className="bg-slate-800/60 p-6 rounded-xl shadow-lg border border-slate-700 no-print">
+            <h2 className="text-xl font-semibold mb-4 text-white">Input Data Operasional Massal</h2>
+            <p className="text-sm text-slate-400 mb-4">Unggah data operasional beberapa hari sekaligus menggunakan file Excel. Unduh template terlebih dahulu untuk memastikan format yang benar.</p>
+            <div className="flex flex-wrap gap-4">
+                <button onClick={handleDownloadOpTemplate} className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Unduh Template
+                </button>
+                <label htmlFor="op-upload" className="inline-flex items-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg cursor-pointer transition-colors duration-300">
+                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Unggah Excel
+                </label>
+                <input id="op-upload" ref={fileInputRef} type="file" className="hidden" accept=".xlsx, .xls" onChange={handleOpFileUpload} />
+            </div>
+          </section>
           
-          <section className="bg-slate-800/60 p-4 rounded-xl shadow-lg border border-slate-700">
-            <h2 className="text-xl font-semibold mb-4 text-cyan-300">Log Data Operasional ({filteredOperationalData.length} entri)</h2>
+          <section id="operational-data-section" className="bg-slate-800/60 p-4 rounded-xl shadow-lg border border-slate-700">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-cyan-300">Log Data Operasional ({filteredOperationalData.length} entri)</h2>
+              <button onClick={() => window.print()} className="no-print inline-flex items-center bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Unduh PDF
+              </button>
+            </div>
             <OperationalDataTable data={filteredOperationalData} onEdit={handleOpEdit} onDelete={handleOpDelete} />
           </section>
 
-          <section className="bg-slate-800/60 p-6 rounded-xl shadow-lg border border-slate-700">
-             <AnalysisPanel productionData={filteredOperationalData} totalsData={[]} />
-          </section>
         </div>
       )}
 
       {/* --- EMPLOYEES VIEW --- */}
       {currentView === 'EMPLOYEES' && (
         <div className="space-y-8">
-            <section className="bg-slate-800/60 p-6 rounded-xl shadow-lg border border-slate-700">
+            <section className="bg-slate-800/60 p-6 rounded-xl shadow-lg border border-slate-700 no-print">
                 <h2 className="text-xl font-semibold mb-4 text-white">
                      {editingKaryawan ? `Edit Data Karyawan: ${editingKaryawan.nama}` : 'Input Data Karyawan Baru'}
                 </h2>
@@ -624,7 +729,7 @@ const AdminPage: React.FC<AdminPageProps> = (props) => {
                 </form>
             </section>
 
-            <section className="bg-slate-800/60 p-6 rounded-xl shadow-lg border border-slate-700">
+            <section className="bg-slate-800/60 p-6 rounded-xl shadow-lg border border-slate-700 no-print">
                 <h2 className="text-xl font-semibold mb-4 text-white">Input Data Massal</h2>
                 <p className="text-sm text-slate-400 mb-4">Unggah data beberapa karyawan sekaligus menggunakan file Excel. Unduh template terlebih dahulu untuk memastikan format yang benar.</p>
                 <div className="flex flex-wrap gap-4">
@@ -658,7 +763,7 @@ const AdminPage: React.FC<AdminPageProps> = (props) => {
 
       {/* --- MANAGEMENT VIEW --- */}
       {currentView === 'MANAGEMENT' && (
-        <div className="space-y-8">
+        <div className="space-y-8 no-print">
           <section className="bg-slate-800/60 p-6 rounded-xl shadow-lg border border-slate-700">
             <h2 className="text-xl font-semibold mb-4 text-white">Logo Perusahaan</h2>
             <p className="text-sm text-slate-400 mb-4">Unggah logo perusahaan untuk ditampilkan di header aplikasi. Logo akan disimpan di perangkat Anda.</p>

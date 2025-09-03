@@ -22,9 +22,15 @@
 </script>
 <style>
     @media print {
+      body {
+        background-color: #fff !important;
+        padding: 0;
+        margin: 0;
+      }
       .no-print {
         display: none !important;
       }
+      /* For Employee Portfolio Modal */
       .printable-area {
         position: absolute;
         left: 0;
@@ -32,11 +38,18 @@
         width: 100%;
         height: auto;
         overflow: visible;
-        background: white; /* Ensure background is white for printing */
+        background: white;
         color: black;
       }
-      body {
-        background-color: #fff !important;
+      /* For Admin Operational Table */
+      #operational-data-section {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        border: none !important;
+        box-shadow: none !important;
+        background-color: white !important;
       }
     }
 </style>

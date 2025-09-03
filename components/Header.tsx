@@ -8,6 +8,8 @@ interface HeaderProps {
   onLogout: () => void;
   logoUrl: string | null;
   view: View;
+  isOnline: boolean;
+  dbError: boolean;
 }
 
 const MiningIcon = () => (
@@ -23,10 +25,36 @@ const UserIcon = () => (
     </svg>
 );
 
+const StatusIndicator: React.FC<{ isOnline: boolean; dbError: boolean }> = ({ isOnline, dbError }) => {
+    const internetStatus = {
+        online: isOnline,
+        text: isOnline ? 'Terhubung' : 'Terputus',
+        color: isOnline ? 'bg-green-500' : 'bg-red-500',
+    };
+    const dbStatus = {
+        online: !dbError,
+        text: !dbError ? 'Berhasil' : 'Gagal',
+        color: !dbError ? 'bg-green-500' : 'bg-red-500',
+    };
 
-const Header: React.FC<HeaderProps> = ({ isLoggedIn, onNavigate, onLogout, logoUrl, view }) => {
+    return (
+        <div className="flex items-center space-x-3 ml-6">
+            <div className="group relative flex items-center space-x-1.5" title={`Koneksi Internet: ${internetStatus.text}`}>
+                <div className={`w-2.5 h-2.5 rounded-full ${internetStatus.color} transition-colors`}></div>
+                <span className="text-xs text-slate-400 hidden xl:inline">Internet</span>
+            </div>
+             <div className="group relative flex items-center space-x-1.5" title={`Koneksi Database: ${dbStatus.text}`}>
+                <div className={`w-2.5 h-2.5 rounded-full ${dbStatus.color} transition-colors`}></div>
+                <span className="text-xs text-slate-400 hidden xl:inline">Database</span>
+            </div>
+        </div>
+    );
+};
+
+
+const Header: React.FC<HeaderProps> = ({ isLoggedIn, onNavigate, onLogout, logoUrl, view, isOnline, dbError }) => {
   return (
-    <header className="bg-slate-800/50 backdrop-blur-sm shadow-md sticky top-0 z-10">
+    <header className="bg-slate-800/50 backdrop-blur-sm shadow-md sticky top-0 z-10 no-print">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -61,6 +89,9 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, onNavigate, onLogout, logoU
                 Karyawan
               </button>
             </nav>
+            <div className="hidden lg:flex">
+              <StatusIndicator isOnline={isOnline} dbError={dbError} />
+            </div>
           </div>
           
           <div className="flex items-center space-x-4">
