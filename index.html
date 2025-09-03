@@ -41,6 +41,45 @@
         box-shadow: none !important;
         background-color: white !important;
       }
+
+      /* --- Employee Portfolio Modal A4 Layout --- */
+      .printable-area {
+        background: white !important;
+        color: black !important;
+        font-size: 9pt !important;
+        box-shadow: none !important;
+        border: none !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      
+      .printable-area * {
+        color: black !important;
+        background: transparent !important;
+        border-color: #ccc !important;
+      }
+
+      .printable-area main {
+          flex-direction: column !important;
+      }
+      
+      .printable-area aside, 
+      .printable-area section {
+          width: 100% !important;
+          padding: 1rem !important;
+          background: none !important;
+      }
+      
+      .printable-area img.absolute { /* Watermark */
+          opacity: 0.1 !important;
+      }
+      
+      .printable-area .bg-green-600\/30, 
+      .printable-area .bg-red-600\/30 {
+          background-color: #eee !important;
+          color: black !important;
+          border: 1px solid #ccc;
+      }
     }
 </style>
 </head>

@@ -25,6 +25,10 @@ const DetailItem = ({ label, value, className }: { label: string, value: React.R
 const KaryawanDataTable: React.FC<KaryawanDataTableProps> = ({ data, logoUrl, onEdit, onDelete }) => {
   const [previewKaryawan, setPreviewKaryawan] = useState<Karyawan | null>(null);
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   const headers = [
     { key: 'foto', label: '' },
     { key: 'nama', label: 'Nama Lengkap' },
@@ -237,6 +241,15 @@ const KaryawanDataTable: React.FC<KaryawanDataTableProps> = ({ data, logoUrl, on
             </div>
              {/* Footer Actions */}
             <div className="p-4 bg-slate-900/50 border-t border-slate-700/80 flex justify-end gap-3 no-print">
+                <button 
+                    onClick={handlePrint} 
+                    className="inline-flex items-center px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg text-sm transition-colors"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    Cetak
+                </button>
                 <button 
                     onClick={() => setPreviewKaryawan(null)} 
                     className="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white font-semibold rounded-lg text-sm"
