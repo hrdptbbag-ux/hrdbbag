@@ -22,32 +22,7 @@
 </script>
 <style>
     @media print {
-      /* --- Modal Printing Logic --- */
-      /* Hide everything by default when the 'printing-modal' class is on the body */
-      body.printing-modal > *:not(.print-section) {
-        display: none !important;
-      }
-      /* Then, reveal the targeted print section and its children */
-      body.printing-modal .print-section, 
-      body.printing-modal .print-section * {
-        visibility: visible;
-        display: block !important;
-      }
-      /* Position the modal to take up the whole page for printing */
-      body.printing-modal .print-section {
-        position: absolute !important;
-        left: 0 !important;
-        top: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        overflow: visible !important;
-        border: none !important;
-        box-shadow: none !important;
-      }
-
-      /* --- Generic Print Styles (for all contexts) --- */
+      /* --- Generic Print Styles --- */
       body {
         background-color: #fff !important;
         font-size: 9pt;
@@ -55,18 +30,6 @@
       .no-print {
         display: none !important;
       }
-      .printable-area {
-        background: white !important;
-        color: black !important;
-        max-height: none !important;
-        overflow-y: visible !important;
-      }
-      .printable-area *, .printable-area h1, .printable-area h2, .printable-area h3, .printable-area p, .printable-area span, .printable-area strong {
-         color: black !important;
-         background-color: transparent !important;
-      }
-      .printable-area .text-cyan-400 { color: #0891b2 !important; }
-      .printable-area [class*="border-"] { border-color: #dee2e6 !important; }
       
       /* --- Admin Page Table Printing Logic --- */
       #operational-data-section {
@@ -77,92 +40,6 @@
         border: none !important;
         box-shadow: none !important;
         background-color: white !important;
-      }
-
-      /* --- Employee Portfolio Modal Print Styles (Optimized for A4) --- */
-      body.printing-modal #cv-preview {
-        font-size: 9pt; /* Reduced for compactness */
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-
-      /* Hide modal header, watermark */
-      body.printing-modal #cv-preview header,
-      body.printing-modal #cv-preview img[alt="Watermark"] {
-        display: none !important;
-      }
-
-      /* Reset the main scrollable container for printing */
-      body.printing-modal #cv-preview .printable-area {
-        max-height: none !important;
-        overflow: visible !important;
-      }
-      
-      /* Force white background and black text on all children */
-      body.printing-modal #cv-preview .printable-area * {
-        background-color: transparent !important;
-        color: black !important;
-        box-shadow: none !important;
-        border-color: #ccc !important;
-      }
-
-      /* Retain brand colors, converted for better print visibility */
-      body.printing-modal #cv-preview .printable-area .text-cyan-400 { color: #0891b2 !important; }
-      body.printing-modal #cv-preview .printable-area .bg-green-600\/30 { background-color: #f0fdf4 !important; }
-      body.printing-modal #cv-preview .printable-area .text-green-300 { color: #15803d !important; }
-      body.printing-modal #cv-preview .printable-area .bg-red-600\/30 { background-color: #fef2f2 !important; }
-      body.printing-modal #cv-preview .printable-area .text-red-300 { color: #b91c1c !important; }
-
-      /* Force single-column layout with tighter page margins */
-      body.printing-modal #cv-preview main {
-        display: block !important;
-        padding: 0 1rem !important; /* Tighter margins */
-      }
-      
-      /* Style the two main sections to stack cleanly with less space */
-      body.printing-modal #cv-preview main > aside,
-      body.printing-modal #cv-preview main > section {
-        width: 100% !important;
-        box-sizing: border-box; 
-        padding: 0.5rem 0 !important; /* Reduced vertical space */
-      }
-
-      /* Profile picture and name alignment */
-      body.printing-modal #cv-preview main > aside .flex-col {
-        align-items: flex-start !important;
-        text-align: left !important;
-      }
-      body.printing-modal #cv-preview aside img.rounded-full,
-      body.printing-modal #cv-preview aside div.rounded-full {
-        width: 110px !important; /* Smaller picture */
-        height: 110px !important;
-        margin-bottom: 0.8rem;
-        border-width: 2px !important;
-      }
-
-      /* Adjust typography for compactness and readability */
-      body.printing-modal #cv-preview h2.text-2xl {
-        font-size: 16pt !important; /* Reduced heading */
-        text-align: left !important;
-      }
-      body.printing-modal #cv-preview p.text-md {
-        font-size: 11pt !important; /* Reduced sub-heading */
-        text-align: left !important;
-      }
-      body.printing-modal #cv-preview h3.text-lg,
-      body.printing-modal #cv-preview h3.text-xl {
-        font-size: 13pt !important; /* Reduced section heading */
-        margin-top: 1.2rem !important; /* Tighter margin */
-        padding-bottom: 0.2rem !important;
-        border-bottom-width: 1px !important;
-      }
-
-      /* Unset grid layouts to stack items vertically with less space */
-      body.printing-modal #cv-preview .grid {
-        display: block !important;
-      }
-      body.printing-modal #cv-preview .grid > * {
-        margin-bottom: 0.5rem !important; /* Tighter grid spacing */
       }
     }
 </style>

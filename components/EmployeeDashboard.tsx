@@ -50,16 +50,6 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ data, logoUrl }) 
     const [previewKaryawan, setPreviewKaryawan] = useState<Karyawan | null>(null);
     const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
 
-    const handlePrint = () => {
-        const onAfterPrint = () => {
-          document.body.classList.remove('printing-modal');
-          window.removeEventListener('afterprint', onAfterPrint);
-        };
-        window.addEventListener('afterprint', onAfterPrint);
-        document.body.classList.add('printing-modal');
-        window.print();
-    };
-
     const kpis = useMemo(() => {
         const totalKaryawan = data.length;
         const karyawanAktif = data.filter(k => k.status === 'Aktif').length;
@@ -227,8 +217,7 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ data, logoUrl }) 
           onClick={() => setPreviewKaryawan(null)}
         >
           <div 
-            id="cv-preview"
-            className="bg-slate-800 rounded-lg shadow-2xl w-full max-w-5xl m-4 border border-slate-700/80 overflow-hidden relative print-section"
+            className="bg-slate-800 rounded-lg shadow-2xl w-full max-w-5xl m-4 border border-slate-700/80 overflow-hidden relative"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="printable-area bg-slate-800 text-slate-300 max-h-[90vh] overflow-y-auto">
@@ -333,15 +322,6 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ data, logoUrl }) 
             </div>
              {/* Footer Actions */}
             <div className="p-4 bg-slate-900/50 border-t border-slate-700/80 flex justify-end gap-3 no-print">
-                 <button 
-                    onClick={handlePrint}
-                    className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg text-sm flex items-center gap-2"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                    </svg>
-                    Cetak
-                </button>
                 <button 
                     onClick={() => setPreviewKaryawan(null)} 
                     className="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white font-semibold rounded-lg text-sm"

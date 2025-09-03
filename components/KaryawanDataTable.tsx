@@ -25,16 +25,6 @@ const DetailItem = ({ label, value, className }: { label: string, value: React.R
 const KaryawanDataTable: React.FC<KaryawanDataTableProps> = ({ data, logoUrl, onEdit, onDelete }) => {
   const [previewKaryawan, setPreviewKaryawan] = useState<Karyawan | null>(null);
 
-  const handlePrint = () => {
-    const onAfterPrint = () => {
-      document.body.classList.remove('printing-modal');
-      window.removeEventListener('afterprint', onAfterPrint);
-    };
-    window.addEventListener('afterprint', onAfterPrint);
-    document.body.classList.add('printing-modal');
-    window.print();
-  };
-
   const headers = [
     { key: 'foto', label: '' },
     { key: 'nama', label: 'Nama Lengkap' },
@@ -98,24 +88,32 @@ const KaryawanDataTable: React.FC<KaryawanDataTableProps> = ({ data, logoUrl, on
                         title="Lihat Detail"
                         aria-label="Lihat Detail"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fillRule="evenodd" d="M.458 10C3.732 4.943 7.523 3 10 3s6.268 1.943 9.542 7c-3.274 5.057-7.03 7-9.542 7S3.732 15.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fillRule="evenodd" d="M.458 10C3.732 4.943 7.523 3 10 3s6.268 1.943 9.542 7c-3.274 5.057-7.03 7-9.542 7S3.274 15.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" /></svg>
                       </button>
-                      <button 
-                        onClick={() => onEdit(row)} 
-                        className="text-yellow-400 hover:text-yellow-300 transition-colors duration-200"
-                        title="Edit Data"
-                        aria-label="Edit Data"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" /></svg>
-                      </button>
-                      <button 
-                        onClick={() => onDelete(row.id, row.nama)} 
-                        className="text-red-500 hover:text-red-400 transition-colors duration-200"
-                        title="Hapus Data"
-                        aria-label="Hapus Data"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                      </button>
+                      {onEdit && (
+                        <button 
+                            onClick={() => onEdit(row)} 
+                            className="text-yellow-400 hover:text-yellow-300 transition-colors duration-200"
+                            title="Edit Data"
+                            aria-label="Edit Data"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" />
+                            </svg>
+                        </button>
+                      )}
+                      {onDelete && (
+                        <button 
+                            onClick={() => onDelete(row.id, row.nama)} 
+                            className="text-red-500 hover:text-red-400 transition-colors duration-200"
+                            title="Hapus Data"
+                            aria-label="Hapus Data"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                      )}
                     </div>
                   </td>
                 )}
@@ -134,15 +132,14 @@ const KaryawanDataTable: React.FC<KaryawanDataTableProps> = ({ data, logoUrl, on
           onClick={() => setPreviewKaryawan(null)}
         >
           <div 
-            id="cv-preview"
-            className="bg-slate-800 rounded-lg shadow-2xl w-full max-w-5xl m-4 border border-slate-700/80 overflow-hidden relative print-section"
+            className="bg-slate-800 rounded-lg shadow-2xl w-full max-w-5xl m-4 border border-slate-700/80 overflow-hidden relative"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="printable-area bg-slate-800 text-slate-300 max-h-[90vh] overflow-y-auto">
                 {logoUrl && (
                     <img src={logoUrl} alt="Watermark" className="absolute inset-0 w-1/2 h-1/2 object-contain m-auto opacity-5 pointer-events-none" />
                 )}
-                <header className="p-8 flex items-center justify-between border-b border-slate-700 sticky top-0 bg-slate-800 z-10">
+                <header className="p-8 flex items-center justify-between border-b border-slate-700 sticky top-0 bg-slate-800 z-10 no-print">
                      {logoUrl ? (
                         <img src={logoUrl} alt="Company Logo" className="h-12 w-auto object-contain" />
                      ) : <div className="h-12"></div>}
@@ -240,15 +237,6 @@ const KaryawanDataTable: React.FC<KaryawanDataTableProps> = ({ data, logoUrl, on
             </div>
              {/* Footer Actions */}
             <div className="p-4 bg-slate-900/50 border-t border-slate-700/80 flex justify-end gap-3 no-print">
-                 <button 
-                    onClick={handlePrint}
-                    className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg text-sm flex items-center gap-2"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                    </svg>
-                    Cetak
-                </button>
                 <button 
                     onClick={() => setPreviewKaryawan(null)} 
                     className="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white font-semibold rounded-lg text-sm"
