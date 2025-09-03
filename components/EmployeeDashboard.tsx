@@ -50,6 +50,16 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ data, logoUrl }) 
     const [previewKaryawan, setPreviewKaryawan] = useState<Karyawan | null>(null);
     const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
 
+    const handlePrint = () => {
+        const onAfterPrint = () => {
+          document.body.classList.remove('printing-modal');
+          window.removeEventListener('afterprint', onAfterPrint);
+        };
+        window.addEventListener('afterprint', onAfterPrint);
+        document.body.classList.add('printing-modal');
+        window.print();
+    };
+
     const kpis = useMemo(() => {
         const totalKaryawan = data.length;
         const karyawanAktif = data.filter(k => k.status === 'Aktif').length;
@@ -323,6 +333,15 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ data, logoUrl }) 
             </div>
              {/* Footer Actions */}
             <div className="p-4 bg-slate-900/50 border-t border-slate-700/80 flex justify-end gap-3 no-print">
+                 <button 
+                    onClick={handlePrint}
+                    className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg text-sm flex items-center gap-2"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    Cetak
+                </button>
                 <button 
                     onClick={() => setPreviewKaryawan(null)} 
                     className="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white font-semibold rounded-lg text-sm"
@@ -332,63 +351,9 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ data, logoUrl }) 
             </div>
           </div>
         </div>
-        )}
-        
-        {/* --- Department Employees Modal --- */}
-        {selectedDepartment && (
-            <div 
-                className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" 
-                aria-modal="true" 
-                role="dialog"
-                onClick={() => setSelectedDepartment(null)}
-            >
-                <div 
-                    className="bg-slate-800 rounded-lg shadow-2xl w-full max-w-2xl m-4 border border-slate-700/80 flex flex-col"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <header className="p-4 flex items-center justify-between border-b border-slate-700 sticky top-0 bg-slate-800 z-10">
-                        <h2 className="text-xl font-bold text-cyan-400">
-                            Karyawan Departemen: <span className="text-white">{selectedDepartment}</span>
-                        </h2>
-                        <button 
-                            onClick={() => setSelectedDepartment(null)} 
-                            className="p-1 rounded-full hover:bg-slate-600 transition-colors"
-                            aria-label="Tutup"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </header>
-                    <div className="p-4 sm:p-6 max-h-[70vh] overflow-y-auto">
-                        {departmentModalEmployees.length > 0 ? (
-                        <ul className="space-y-3">
-                            {departmentModalEmployees.map(karyawan => (
-                            <li key={karyawan.id} className="flex items-center bg-slate-900/70 p-3 rounded-lg border border-slate-700 hover:border-cyan-600 transition-colors">
-                                {karyawan.foto_url ? (
-                                    <img src={karyawan.foto_url} alt={karyawan.nama} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-                                ) : (
-                                    <div className="w-12 h-12 flex items-center justify-center bg-slate-700 rounded-full flex-shrink-0">
-                                    <UserPlaceholderIcon className="w-8 h-8"/>
-                                    </div>
-                                )}
-                                <div className="ml-4 flex-grow min-w-0">
-                                <p className="font-bold text-white truncate" title={karyawan.nama}>{karyawan.nama}</p>
-                                <p className="text-sm text-slate-400 truncate" title={karyawan.posisi}>{karyawan.posisi}</p>
-                                </div>
-                                <p className="ml-4 text-xs text-slate-500 font-mono hidden sm:block">NIK: {karyawan.nik}</p>
-                            </li>
-                            ))}
-                        </ul>
-                        ) : (
-                        <p className="text-slate-400 text-center py-8">Tidak ada karyawan yang ditemukan di departemen ini.</p>
-                        )}
-                    </div>
-                </div>
-            </div>
-        )}
-      </>
-    );
+      )}
+    </>
+  );
 };
 
 export default EmployeeDashboard;
