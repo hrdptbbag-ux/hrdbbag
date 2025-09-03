@@ -1,14 +1,2 @@
-# Konfigurasi untuk Netlify
-# Salin konten file ini ke dalam `netlify.toml` untuk menggunakannya.
-
-# Pengaturan Build
-# Karena ini adalah situs statis tanpa proses build, kita hanya perlu
-# memberitahu Netlify direktori mana yang akan dipublikasikan.
-[build]
-  # Perintah build tidak diperlukan.
-  command = ""
-  
-  # Direktori publish adalah root proyek, tempat `index.html` berada.
-  publish = "/"
-
-# Aturan redirect tidak diperlukan untuk aplikasi halaman tunggal ini.
+# Konten file ini telah dipindahkan ke `netlify.toml`.
+# File ini dapat dihapus dengan aman.

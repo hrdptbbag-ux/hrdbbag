@@ -2,15 +2,31 @@ import { GoogleGenAI } from "@google/genai";
 import { OperationalData } from '../types';
 import { GEMINI_CONFIG } from "../config";
 
-// Ambil API Key dari global window object
+let ai: GoogleGenAI | null = null;
+let geminiInitializationError: string | null = null;
+
 const apiKey = window.APP_ENV?.API_KEY;
-const ai = new GoogleGenAI({ apiKey: apiKey || '' });
+
+if (!apiKey || apiKey.includes("MASUKKAN_KUNCI_API_GEMINI_ANDA")) {
+    geminiInitializationError = "Kesalahan Konfigurasi: Kunci API Gemini tidak diatur. Mohon periksa konfigurasi di file `index.html` pada objek `window.APP_ENV`.";
+} else {
+    try {
+        ai = new GoogleGenAI({ apiKey });
+    } catch (e: any) {
+        console.error("Gemini Initialization Error:", e);
+        geminiInitializationError = `Gagal menginisialisasi Gemini client: ${e.message}`;
+        ai = null;
+    }
+}
 
 export const generateProductionAnalysis = async (
   operationalData: OperationalData[]
 ): Promise<string> => {
-  if (!apiKey || apiKey.includes("MASUKKAN_KUNCI_API_GEMINI_ANDA")) {
-    return "Kesalahan Konfigurasi: Kunci API Gemini tidak diatur. Mohon periksa konfigurasi di file `index.html` pada objek `window.APP_ENV`.";
+  if (geminiInitializationError) {
+    return geminiInitializationError;
+  }
+  if (!ai) {
+    return "Kesalahan Kritis: Gemini client tidak berhasil diinisialisasi.";
   }
 
   const prompt = `
@@ -35,7 +51,6 @@ export const generateProductionAnalysis = async (
       contents: prompt,
     });
     return response.text;
-    // Fix: Added curly braces to the catch block to correctly handle errors.
   } catch (error: any) {
     console.error("Error calling Gemini API:", error);
     if (error.message && (error.message.includes('API key not valid') || error.message.includes('permission denied'))) {

@@ -6,7 +6,7 @@ import LoginPage from './components/LoginPage';
 import AdminPage from './components/AdminPage';
 import { View, OperationalData, Karyawan } from './types';
 import { APP_CONFIG } from './config';
-import { supabase } from './services/supabaseClient';
+import { supabase, supabaseInitializationError } from './services/supabaseClient';
 
 function App() {
   const [view, setView] = useState<View>('OPERATIONAL_DASHBOARD');
@@ -26,6 +26,13 @@ function App() {
   }, [notification]);
 
   const fetchData = useCallback(async () => {
+    if (!supabase) {
+        // This case is primarily handled by the initialization check, but serves as a fallback.
+        setError(supabaseInitializationError || "Klien Supabase tidak berhasil diinisialisasi.");
+        setIsLoading(false);
+        return;
+    }
+
     setIsLoading(true);
     setError(null);
     
@@ -45,11 +52,9 @@ function App() {
       const opError = operationalResult.error;
       const karError = karyawanResult.error;
 
-      // Log the full error objects for debugging in the console
       if (opError) console.error('Supabase error (operational_data):', opError);
       if (karError) console.error('Supabase error (karyawan):', karError);
 
-      // Build a user-friendly error message for the UI
       let errorMessages: string[] = [];
       if (opError) {
         errorMessages.push(`Data Operasional: ${opError.message}`);
@@ -67,6 +72,11 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (supabaseInitializationError) {
+        setError(supabaseInitializationError);
+        setIsLoading(false);
+        return;
+    }
     fetchData();
     const savedLogo = localStorage.getItem('companyLogo');
     if (savedLogo) {
@@ -98,6 +108,7 @@ function App() {
 
   // --- Operational Data CRUD Operations ---
   const handleAddData = async (newData: Omit<OperationalData, 'id'>) => {
+    if (!supabase) throw new Error("Koneksi Supabase tidak tersedia.");
     const { data, error } = await supabase
       .from('operational_data')
       .insert([newData])
@@ -110,6 +121,7 @@ function App() {
   };
 
   const handleUpdateData = async (updatedData: OperationalData) => {
+    if (!supabase) throw new Error("Koneksi Supabase tidak tersedia.");
     const { data, error } = await supabase
         .from('operational_data')
         .update(updatedData)
@@ -123,6 +135,7 @@ function App() {
   };
 
   const handleDeleteData = async (dateToDelete: string): Promise<boolean> => {
+    if (!supabase) throw new Error("Koneksi Supabase tidak tersedia.");
     const { error } = await supabase
       .from('operational_data')
       .delete()
@@ -137,6 +150,7 @@ function App() {
   };
 
   const handleDeleteAll = async (): Promise<boolean> => {
+    if (!supabase) throw new Error("Koneksi Supabase tidak tersedia.");
     const { error } = await supabase
         .from('operational_data')
         .delete()
@@ -152,6 +166,7 @@ function App() {
 
   // --- Karyawan Data CRUD Operations ---
   const handleAddKaryawan = async (newKaryawan: Omit<Karyawan, 'id' | 'created_at'>) => {
+    if (!supabase) throw new Error("Koneksi Supabase tidak tersedia.");
     const { data, error } = await supabase
       .from('karyawan')
       .insert([newKaryawan])
@@ -164,6 +179,7 @@ function App() {
   };
   
   const handleUpdateKaryawan = async (updatedKaryawan: Karyawan) => {
+    if (!supabase) throw new Error("Koneksi Supabase tidak tersedia.");
     const { data, error } = await supabase
         .from('karyawan')
         .update(updatedKaryawan)
@@ -177,6 +193,7 @@ function App() {
   };
 
   const handleDeleteKaryawan = async (id: number): Promise<boolean> => {
+    if (!supabase) throw new Error("Koneksi Supabase tidak tersedia.");
     const { error } = await supabase
       .from('karyawan')
       .delete()
@@ -191,6 +208,7 @@ function App() {
   };
 
   const handleAddBulkKaryawan = async (newKaryawanList: Omit<Karyawan, 'id' | 'created_at'>[]) => {
+    if (!supabase) throw new Error("Koneksi Supabase tidak tersedia.");
     const { data, error } = await supabase
       .from('karyawan')
       .insert(newKaryawanList)
@@ -203,6 +221,7 @@ function App() {
   };
   
   const handleDeleteAllKaryawan = async (): Promise<boolean> => {
+    if (!supabase) throw new Error("Koneksi Supabase tidak tersedia.");
     const { error } = await supabase
         .from('karyawan')
         .delete()
@@ -218,14 +237,18 @@ function App() {
 
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading && !error) {
         return <div className="text-center p-10">Memuat data...</div>;
     }
     if (error) {
+      // Check if it's a configuration error to provide a more specific title
+      const isConfigError = error.includes("Konfigurasi");
       return (
         <div className="text-center p-10 max-w-2xl mx-auto">
             <div className="bg-red-900/50 border border-red-700 rounded-lg p-6">
-                <h3 className="text-xl font-bold text-red-300 mb-4">Terjadi Kesalahan Koneksi</h3>
+                <h3 className="text-xl font-bold text-red-300 mb-4">
+                  {isConfigError ? 'Terjadi Kesalahan Konfigurasi Kredensial' : 'Terjadi Kesalahan Koneksi'}
+                </h3>
                 <pre className="text-left text-red-300 whitespace-pre-wrap font-mono text-sm bg-slate-900 p-4 rounded-md">{error}</pre>
             </div>
         </div>
