@@ -49,6 +49,7 @@
       /* --- Generic Print Styles (for all contexts) --- */
       body {
         background-color: #fff !important;
+        font-size: 10pt; /* Adjust base font size for printing */
       }
       .no-print {
         display: none !important;
@@ -77,6 +78,38 @@
         border: none !important;
         box-shadow: none !important;
         background-color: white !important;
+      }
+
+      /* --- Employee Portfolio Modal Print Styles --- */
+      body.printing-modal #cv-preview header {
+        display: none !important; /* Hide the modal header */
+      }
+      body.printing-modal #cv-preview main {
+        display: block !important; /* Change flex-row to single column */
+      }
+      body.printing-modal #cv-preview main > aside,
+      body.printing-modal #cv-preview main > section {
+        width: 100% !important;
+        padding: 1rem 1.5rem !important; /* Reduce padding for print */
+      }
+      body.printing-modal #cv-preview main > aside {
+        padding-bottom: 0 !important;
+      }
+      body.printing-modal #cv-preview main > section {
+         padding-top: 0 !important;
+      }
+       body.printing-modal #cv-preview h2 {
+        font-size: 1.25rem !important;
+      }
+       body.printing-modal #cv-preview h3 {
+        font-size: 1.1rem !important;
+        margin-top: 1rem !important;
+      }
+       body.printing-modal #cv-preview .grid {
+        display: block !important; /* Simplify grid layouts */
+      }
+      body.printing-modal #cv-preview .grid > * {
+         margin-bottom: 0.5rem;
       }
     }
 </style>
