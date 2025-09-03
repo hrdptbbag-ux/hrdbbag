@@ -2,11 +2,17 @@ import { GoogleGenAI } from "@google/genai";
 import { OperationalData } from '../types';
 import { GEMINI_CONFIG } from "../config";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Ambil API Key dari global window object
+const apiKey = window.APP_ENV?.API_KEY;
+const ai = new GoogleGenAI({ apiKey: apiKey || '' });
 
 export const generateProductionAnalysis = async (
   operationalData: OperationalData[]
 ): Promise<string> => {
+  if (!apiKey || apiKey.includes("MASUKKAN_KUNCI_API_GEMINI_ANDA")) {
+    return "Kesalahan Konfigurasi: Kunci API Gemini tidak diatur. Mohon periksa konfigurasi di file `index.html` pada objek `window.APP_ENV`.";
+  }
+
   const prompt = `
     Anda adalah seorang Manajer Operasional Tambang senior di PT. Bahtera Berkah Abadi Grup.
     Tugas Anda adalah menganalisis data log operasional harian berikut dan memberikan laporan singkat, tajam, dan profesional.
@@ -30,8 +36,11 @@ export const generateProductionAnalysis = async (
     });
     return response.text;
     // Fix: Added curly braces to the catch block to correctly handle errors.
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error calling Gemini API:", error);
+    if (error.message && (error.message.includes('API key not valid') || error.message.includes('permission denied'))) {
+        return "Terjadi kesalahan autentikasi dengan API Gemini. Pastikan Kunci API yang Anda masukkan di `index.html` sudah benar, aktif, dan memiliki izin yang sesuai.";
+    }
     return "Terjadi kesalahan saat mencoba menganalisis data. Silakan coba lagi nanti.";
   }
 };

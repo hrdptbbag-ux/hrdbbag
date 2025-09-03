@@ -27,15 +27,37 @@ Aplikasi web modern untuk analisis dan visualisasi data operasional tambang hari
 - **Backend (Database)**: Supabase
 - **Manipulasi Excel**: SheetJS (xlsx)
 - **AI & Generative AI**: Google Gemini API (`@google/genai`)
-- **Build Tool**: Dijalankan langsung di browser menggunakan ES Modules dan Import Maps.
+- **Build Tool**: Dijalankan langsung di browser menggunakan ES Modules dan Import Maps (tanpa proses build).
 
 ## 🛠️ Panduan Memulai dan Deployment
 
-Aplikasi ini dirancang untuk dideploy dengan mudah ke platform seperti Netlify langsung dari repositori GitHub.
+Aplikasi ini dirancang untuk dijalankan langsung di browser dan dideploy dengan mudah ke platform hosting statis seperti Netlify.
 
-### 1. Database Setup (Supabase)
+### 1. Dapatkan Kredensial
 
-1.  **Buat Proyek Baru**: Login ke [Supabase](https://supabase.com/) dan buat proyek baru. Simpan **Project URL** dan **anon (public) key** Anda. Anda akan membutuhkannya untuk langkah berikutnya.
+Anda akan memerlukan tiga kunci untuk menjalankan aplikasi ini:
+1.  **Google Gemini API Key**: Dapatkan dari [Google AI Studio](https://aistudio.google.com/app/apikey).
+2.  **Supabase Project URL**: Dari dashboard proyek Supabase Anda.
+3.  **Supabase Anon (Public) Key**: Dari dashboard proyek Supabase Anda.
+
+### 2. Konfigurasi untuk Development Lokal
+
+1.  Buka file `index.html`.
+2.  Temukan blok `<script>` di dekat bagian bawah file.
+3.  Di dalam objek `window.APP_ENV`, ganti nilai placeholder dengan kredensial yang Anda dapatkan di langkah 1.
+
+    ```javascript
+    window.APP_ENV = {
+      API_KEY: "GANTI_DENGAN_KUNCI_API_GEMINI_ANDA",
+      SUPABASE_URL: "GANTI_DENGAN_URL_SUPABASE_ANDA",
+      SUPABASE_ANON_KEY: "GANTI_DENGAN_KUNCI_ANON_SUPABASE_ANDA"
+    };
+    ```
+4.  Simpan file `index.html`, dan aplikasi siap dijalankan secara lokal.
+
+### 3. Database Setup (Supabase)
+
+1.  **Buat Proyek Baru**: Login ke [Supabase](https://supabase.com/) dan buat proyek baru.
 2.  **Buka SQL Editor**: Buka **SQL Editor** di dashboard Supabase Anda. Salin dan jalankan skrip SQL **tunggal** di bawah ini untuk membuat atau memperbarui semua tabel dan kebijakan keamanan yang diperlukan. Skrip ini aman untuk dijalankan beberapa kali.
 
 ```sql
@@ -229,30 +251,41 @@ CREATE POLICY "Allow public write access for karyawan" ON public.karyawan
 FOR ALL USING (true) WITH CHECK (true);
 ```
 
-### 2. Konfigurasi dan Deployment ke Netlify
+### 4. Deployment ke Netlify (Cara yang Direkomendasikan)
 
-Untuk menjaga keamanan, semua kunci API dan kredensial dikelola melalui *environment variables* (variabel lingkungan) dan tidak disimpan di dalam kode.
+Untuk menjaga keamanan kredensial Anda, jangan pernah menyimpan kunci asli Anda di dalam file `index.html` saat mengunggah ke repositori publik seperti GitHub. Gunakan fitur **Snippet Injection** dari Netlify.
 
-1.  **Hubungkan Repositori GitHub Anda ke Netlify**: Buat situs baru di Netlify dan pilih repositori GitHub Anda. Karena aplikasi ini tidak memerlukan proses *build*, Anda dapat membiarkan pengaturan *build* kosong.
-2.  **Atur Variabel Lingkungan**:
+1.  **Atur Variabel Lingkungan di Netlify**:
     - Pergi ke **Site settings > Build & deploy > Environment**.
     - Klik **Edit variables** dan tambahkan tiga variabel berikut:
 
-| Variabel             | Nilai                                                  | Deskripsi                                 |
-| -------------------- | ------------------------------------------------------ | ----------------------------------------- |
-| `API_KEY`            | `AIzaSy...`                                            | Kunci API Google Gemini Anda dari Google AI Studio. |
-| `SUPABASE_URL`       | `https://<ID_PROYEK_ANDA>.supabase.co`                  | URL Proyek dari dashboard Supabase Anda.    |
-| `SUPABASE_ANON_KEY`  | `ey...`                                                | Kunci `anon` (publik) dari dashboard Supabase Anda. |
+    | Variabel             | Nilai                                                  |
+    | -------------------- | ------------------------------------------------------ |
+    | `API_KEY`            | Kunci API Google Gemini Anda.                          |
+    | `SUPABASE_URL`       | URL Proyek Supabase Anda.                              |
+    | `SUPABASE_ANON_KEY`  | Kunci `anon` (publik) Supabase Anda.                   |
 
-**Penting**: Setelah mengatur variabel-variabel ini, Anda perlu memicu deploy baru di Netlify agar perubahan diterapkan (biasanya di tab "Deploys" > "Trigger deploy").
+2.  **Konfigurasi Snippet Injection**:
+    - Pergi ke **Site settings > Build & deploy > Post processing > Snippet injection**.
+    - Klik **Add snippet**.
+    - Atur **Inject before `</head>`** dan tempelkan kode berikut ke dalam kotak **HTML**:
+
+    ```html
+    <script>
+      window.APP_ENV = {
+        API_KEY: "{{- .Env.API_KEY -}}",
+        SUPABASE_URL: "{{- .Env.SUPABASE_URL -}}",
+        SUPABASE_ANON_KEY: "{{- .Env.SUPABASE_ANON_KEY -}}"
+      };
+    </script>
+    ```
+    - Simpan snippet tersebut.
+
+3.  **Deploy**: Hubungkan repositori GitHub Anda ke Netlify dan deploy. Netlify akan secara otomatis menyuntikkan kunci Anda dengan aman saat menyajikan situs Anda, tanpa menampilkannya di kode sumber Anda di GitHub.
 
 ## ⚙️ Konfigurasi Lainnya
 
-Konfigurasi tambahan aplikasi dapat ditemukan di file `config.ts`. Di sini Anda dapat mengubah:
-- Nama aplikasi dan perusahaan.
-- Kredensial login admin (`ADMIN_CREDENTIALS`).
-- Model Gemini yang digunakan (`GEMINI_CONFIG`).
-- Pengaturan UI seperti warna grafik (`UI_CONFIG`).
+Konfigurasi tambahan aplikasi (nama aplikasi, kredensial admin, dll.) dapat ditemukan di file `config.ts`.
 
 ## 📂 Struktur Proyek
 

@@ -8,6 +8,19 @@
  * =================================================================
  */
 
+// Menambahkan deklarasi global untuk objek environment variables
+// yang akan di-inject ke dalam window.
+declare global {
+  interface Window {
+    APP_ENV: {
+      API_KEY: string;
+      SUPABASE_URL: string;
+      SUPABASE_ANON_KEY: string;
+    };
+  }
+}
+
+
 // --- Informasi Umum Aplikasi ---
 export const APP_CONFIG = {
   APP_NAME: 'Analisis Operasional Tambang',
@@ -25,16 +38,16 @@ export const ADMIN_CREDENTIALS = {
 };
 
 // --- Pengaturan Database (Supabase) ---
-// Kredensial Supabase diambil dari environment variables untuk keamanan.
-// Saat mendeploy ke layanan seperti Netlify, pastikan untuk mengatur
-// SUPABASE_URL dan SUPABASE_ANON_KEY di pengaturan environment situs Anda.
+// Kredensial Supabase diambil dari objek window.APP_ENV untuk kompatibilitas browser.
+// Lihat instruksi di index.html untuk cara mengkonfigurasi variabel ini
+// baik untuk development lokal maupun deployment di Netlify.
 export const SUPABASE_CONFIG = {
-  URL: process.env.SUPABASE_URL as string,
-  ANON_KEY: process.env.SUPABASE_ANON_KEY as string,
+  URL: window.APP_ENV?.SUPABASE_URL,
+  ANON_KEY: window.APP_ENV?.SUPABASE_ANON_KEY,
 };
 
 // --- Pengaturan Model AI (Gemini) ---
-// API Key Gemini juga diambil dari environment variable API_KEY.
+// Kunci API Gemini juga diambil dari objek window.APP_ENV.
 export const GEMINI_CONFIG = {
   MODEL: 'gemini-2.5-flash',
 };

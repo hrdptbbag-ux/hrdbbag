@@ -4,8 +4,8 @@ import { SUPABASE_CONFIG } from '../config';
 const supabaseUrl = SUPABASE_CONFIG.URL;
 const supabaseAnonKey = SUPABASE_CONFIG.ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    const errorMessage = 'Kesalahan Konfigurasi: Variabel lingkungan SUPABASE_URL atau SUPABASE_ANON_KEY tidak diatur. Aplikasi tidak dapat terhubung ke database. Harap atur variabel ini di environment hosting Anda (misalnya, Netlify).';
+if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes("MASUKKAN_URL_SUPABASE_ANDA")) {
+    const errorMessage = 'Kesalahan Konfigurasi: Kredensial Supabase tidak diatur. Buka file `index.html`, temukan objek `window.APP_ENV`, dan ganti nilai placeholder dengan kredensial Supabase Anda. Untuk production, gunakan Snippet Injection di Netlify seperti yang dijelaskan di komentar file tersebut.';
     
     // Menampilkan pesan di UI jika memungkinkan, atau lempar error
     const rootEl = document.getElementById('root');
