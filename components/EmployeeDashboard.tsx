@@ -208,7 +208,7 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ data, logoUrl }) 
        {/* --- Preview Modal --- */}
       {previewKaryawan && (
         <div 
-          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 no-print" 
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" 
           aria-modal="true" 
           role="dialog"
           onClick={() => setPreviewKaryawan(null)}
