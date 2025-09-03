@@ -265,6 +265,11 @@ const AdminPage: React.FC<AdminPageProps> = (props) => {
         }
     }
   };
+
+  const handleOpFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setOpFilters(prev => ({ ...prev, [name]: value }));
+  };
   
   const filteredOperationalData = useMemo(() => {
     if (!opFilters.startDate && !opFilters.endDate) return operationalData;
@@ -331,6 +336,7 @@ const AdminPage: React.FC<AdminPageProps> = (props) => {
 
                 const wt = pro + stb + bd;
                 const pa = wt > 0 ? ((pro + stb) / wt) * 100 : 0;
+                const ma = pa;
                 const ua = (pro + stb) > 0 ? (pro / (pro + stb)) * 100 : 0;
                 const eu = wt > 0 ? (pro / wt) * 100 : 0;
                 const averageM3 = ritase > 0 ? volume / ritase : 0;
@@ -338,7 +344,7 @@ const AdminPage: React.FC<AdminPageProps> = (props) => {
 
                 return {
                     date, pro, stb, bd, ritase, volume, targetM3,
-                    wt, pa, ua, ma: pa, eu, averageM3, pencapaian
+                    wt, pa, ua, ma, eu, averageM3, pencapaian
                 };
             });
             
@@ -347,7 +353,7 @@ const AdminPage: React.FC<AdminPageProps> = (props) => {
 
         } catch (error: any) {
             console.error("Gagal mengunggah data operasional:", error);
-            setNotification({ message: `Gagal mengunggah file: ${error.message}`, type: 'error' });
+            setNotification({ message: `Gagal memproses file. Pastikan format kolom sesuai template (angka untuk nilai, tanggal untuk 'date'). Kesalahan: ${error.message}`, type: 'error' });
         } finally {
             setIsSubmitting(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -685,15 +691,25 @@ const AdminPage: React.FC<AdminPageProps> = (props) => {
             </div>
           </section>
           
-          <section id="operational-data-section" className="bg-slate-800/60 p-4 rounded-xl shadow-lg border border-slate-700">
-            <div className="flex justify-between items-center mb-4">
+          <section id="operational-data-section" className="bg-slate-800/60 p-6 rounded-xl shadow-lg border border-slate-700">
+            <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
               <h2 className="text-xl font-semibold text-cyan-300">Log Data Operasional ({filteredOperationalData.length} entri)</h2>
-              <button onClick={() => window.print()} className="no-print inline-flex items-center bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Unduh PDF
-              </button>
+              <div className="flex flex-wrap items-center gap-4 no-print">
+                  <div className="flex items-center gap-2">
+                      <label htmlFor="startDate" className="text-sm font-medium text-slate-400">Dari:</label>
+                      <input type="date" name="startDate" id="startDate" value={opFilters.startDate} onChange={handleOpFilterChange} className="px-3 py-2 text-white bg-slate-700 border border-slate-600 rounded-lg focus:ring-cyan-500 focus:border-cyan-500 text-sm"/>
+                  </div>
+                  <div className="flex items-center gap-2">
+                      <label htmlFor="endDate" className="text-sm font-medium text-slate-400">Sampai:</label>
+                      <input type="date" name="endDate" id="endDate" value={opFilters.endDate} onChange={handleOpFilterChange} className="px-3 py-2 text-white bg-slate-700 border border-slate-600 rounded-lg focus:ring-cyan-500 focus:border-cyan-500 text-sm"/>
+                  </div>
+                  <button onClick={() => window.print()} className="inline-flex items-center bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Unduh PDF
+                  </button>
+              </div>
             </div>
             <OperationalDataTable data={filteredOperationalData} onEdit={handleOpEdit} onDelete={handleOpDelete} />
           </section>
