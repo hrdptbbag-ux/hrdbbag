@@ -1,6 +1,6 @@
-# Analisis Operasional Tambang - PT. BBAG
+# HRD PT. BBAG
 
-Aplikasi web modern untuk analisis dan visualisasi data operasional tambang harian. Dibuat untuk PT. Bahtera Berkah Abadi Grup (PT. BBAG), aplikasi ini membantu melacak Key Performance Indicators (KPI) penting seperti volume produksi, pencapaian target, total ritase, dan utilisasi unit.
+Aplikasi web modern untuk manajemen sumber daya manusia (HRD) dan data operasional untuk PT. Bahtera Berkah Abadi Grup.
 
 ## ✨ Fitur Utama
 
@@ -62,7 +62,7 @@ Anda akan memerlukan tiga kunci untuk menjalankan aplikasi ini:
 
 ```sql
 -- =================================================================
--- SKRIP SQL LENGKAP UNTUK APLIKASI ANALISIS OPERASIONAL TAMBANG
+-- SKRIP SQL LENGKAP UNTUK APLIKASI HRD PT. BBAG
 -- =================================================================
 -- Skrip ini akan membuat tabel `operational_data` dan `karyawan`
 -- serta mengkonfigurasi Row Level Security (RLS) yang diperlukan.

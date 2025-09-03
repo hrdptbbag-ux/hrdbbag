@@ -23,9 +23,9 @@ declare global {
 
 // --- Informasi Umum Aplikasi ---
 export const APP_CONFIG = {
-  APP_NAME: 'Analisis Operasional Tambang',
+  APP_NAME: 'HRD PT. BBAG',
   COMPANY_NAME: 'PT. Bahtera Berkah Abadi Grup',
-  FOOTER_TEXT: `© ${new Date().getFullYear()} PT. BBAG Mining Analytics. All Rights Reserved.`,
+  FOOTER_TEXT: `© ${new Date().getFullYear()} PT. BBAG HRD System. All Rights Reserved.`,
 };
 
 // --- Pengaturan Kredensial Admin ---
