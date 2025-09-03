@@ -49,6 +49,15 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ data, logoUrl }) 
     const [statusFilter, setStatusFilter] = useState('Semua');
     const [previewKaryawan, setPreviewKaryawan] = useState<Karyawan | null>(null);
 
+    const handlePrint = () => {
+        const body = document.body;
+        body.classList.add('printing-modal');
+        window.addEventListener('afterprint', () => {
+          body.classList.remove('printing-modal');
+        }, { once: true });
+        window.print();
+    };
+
     const kpis = useMemo(() => {
         const totalKaryawan = data.length;
         const karyawanAktif = data.filter(k => k.status === 'Aktif').length;
@@ -206,7 +215,7 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ data, logoUrl }) 
         >
           <div 
             id="cv-preview"
-            className="bg-slate-800 rounded-lg shadow-2xl w-full max-w-5xl m-4 border border-slate-700/80 overflow-hidden relative print-container"
+            className="bg-slate-800 rounded-lg shadow-2xl w-full max-w-5xl m-4 border border-slate-700/80 overflow-hidden relative print-section"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="printable-area bg-slate-800 text-slate-300 max-h-[90vh] overflow-y-auto">
@@ -312,7 +321,7 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ data, logoUrl }) 
              {/* Footer Actions */}
             <div className="p-4 bg-slate-900/50 border-t border-slate-700/80 flex justify-end gap-3 no-print">
                  <button 
-                    onClick={() => window.print()}
+                    onClick={handlePrint}
                     className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg text-sm flex items-center gap-2"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
